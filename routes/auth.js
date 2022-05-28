@@ -4,13 +4,16 @@ const { check } = require('express-validator')
 const { validarCampos } = require('../middlewares/validar-campos')
 const { crearUsuario, Login, ReTokenizar, changePassword, sendEmail } = require('../controllers/auth');
 const { validarJWT } = require('../middlewares/validar-jwt');
+const { ExistEmail } = require('../middlewares/db-validators');
 
 
 router.post('/new',
     [
         check('name', 'El nombre es obligatorio').not().isEmpty(),
         check('lastName', 'El nombre es obligatorio').not().isEmpty(),
+        check('password', 'El password es obligatorio').not().isEmpty(),
         check('email', 'El email es obligatorio').isEmail(),
+        ExistEmail,
         validarCampos
     ],
     crearUsuario)

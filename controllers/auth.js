@@ -7,17 +7,10 @@ const Code = require('../models/Code');
 
 const crearUsuario = async (req, res = express.response) => {
 
-    const { name, email, password } = req.body
+    const { name,lastName, email, password } = req.body
     try {
-        let usuario = await Usuario.findOne({ email: email });
-        console.log(usuario);
-        if (usuario) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'el correo ya existe'
-            })
-        }
-        usuario = new Usuario(req.body)
+       
+        let usuario = new Usuario({name,lastName, email});
 
         ///encript contraseña
         const salt = bcrypt.genSaltSync();
@@ -30,7 +23,9 @@ const crearUsuario = async (req, res = express.response) => {
         return res.status(201).json({
             ok: true,
             uid: usuario.id,
+            correo:usuario.correo,
             name: usuario.name,
+            lastName:usuario.lastName,
             token: token
         });
     } catch (error) {
