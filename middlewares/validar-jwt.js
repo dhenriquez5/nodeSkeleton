@@ -19,6 +19,8 @@ const validarJWT = (req = express.request, res = express.response, next) => {
         );
         req.uid = payload.uid;
         req.name = payload.name;
+        req.lastName=payload.lastName;
+        req.email = payload.email;
 
     } catch (error) {
 

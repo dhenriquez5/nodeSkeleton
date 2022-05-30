@@ -7,10 +7,10 @@ const Code = require('../models/Code');
 
 const crearUsuario = async (req, res = express.response) => {
 
-    const { name,lastName, email, password } = req.body
+    const { name, lastName, email, password } = req.body
     try {
-       
-        let usuario = new Usuario({name,lastName, email});
+
+        let usuario = new Usuario({ name, lastName, email });
 
         ///encript contraseña
         const salt = bcrypt.genSaltSync();
@@ -19,13 +19,13 @@ const crearUsuario = async (req, res = express.response) => {
         await usuario.save();
 
         ///GenerarToken
-        const token = await generarToken(usuario.id, usuario.name)
+        const token = await generarToken(usuario.id, usuario.name, usuario.email, usuario.lastName);
         return res.status(201).json({
             ok: true,
             uid: usuario.id,
-            correo:usuario.correo,
+            email: usuario.email,
             name: usuario.name,
-            lastName:usuario.lastName,
+            lastName: usuario.lastName,
             token: token
         });
     } catch (error) {
@@ -62,11 +62,14 @@ const Login = async (req, res = express.response) => {
         }
 
         ////GenerarToken
-        const token = await generarToken(usuario.id, usuario.name)
+        const token = await generarToken(usuario.id, usuario.name, usuario.email, usuario.lastName);
+
         res.json({
             ok: true,
             uid: usuario.id,
+            email: usuario.email,
             name: usuario.name,
+            lastName: usuario.lastName,
             token: token
         });
     } catch (error) {
@@ -83,28 +86,33 @@ const Login = async (req, res = express.response) => {
 const ReTokenizar = async (req, res) => {
 
     const uid = req.uid;
-    const name = req.name
+    const name = req.name;
+    const email = req.email;
+    const lastName = req.lastName;
 
-    const token = await generarToken(uid,name)
+    const token = await generarToken(uid, name,email,lastName);
 
     res.json({
         ok: true,
-        token: token,
-        uid, name
+        uid,
+        email,
+        name,
+        lastName,
+        token: token
     });
 }
 
-const changePassword= async (req, res = express.response) => {
-    const { email, password,token } = req.body;
+const changePassword = async (req, res = express.response) => {
+    const { email, password, token } = req.body;
     try {
         const salt = bcrypt.genSaltSync();
-        const newPassword= bcrypt.hashSync(password, salt);
+        const newPassword = bcrypt.hashSync(password, salt);
 
-        let usuario = await Usuario.findOneAndUpdate({ email: email },{password: password},{new:true});
+        let usuario = await Usuario.findOneAndUpdate({ email: email }, { password: password }, { new: true });
 
         return res.status(200).json({
             ok: true,
-            msg:'La contraseña ha sido actualizada correctamente',
+            msg: 'La contraseña ha sido actualizada correctamente',
             usuario
         })
 
@@ -117,7 +125,7 @@ const changePassword= async (req, res = express.response) => {
 }
 
 
-const sendEmail= async (req, res = express.response) => {
+const sendEmail = async (req, res = express.response) => {
     const { email } = req.body;
     try {
         let usuario = await Usuario.findOne({ email: email });
@@ -127,13 +135,13 @@ const sendEmail= async (req, res = express.response) => {
                 msg: 'El correo no existe'
             })
         }
-        
+
         let codeGenerator = new Code(req.body);
-        const code =makeCode(4);
+        const code = makeCode(4);
         codeGenerator.code = code;
         await codeGenerator.save();
-        const isSent= sendingMails(usuario.email,usuario.name,usuario.lastName,code);
-        if(!isSent){
+        const isSent = sendingMails(usuario.email, usuario.name, usuario.lastName, code);
+        if (!isSent) {
             return res.status(400).json({
                 ok: false,
                 msg: 'No se envio el correo correctamente, intente nuevamente'
@@ -143,7 +151,7 @@ const sendEmail= async (req, res = express.response) => {
 
         return res.status(200).json({
             ok: true,
-            msg:'Se ha enviado un correo que incluye un token que sera necesario para cambiar la contraseña',
+            msg: 'Se ha enviado un correo que incluye un token que sera necesario para cambiar la contraseña',
         })
 
     } catch (error) {
@@ -160,7 +168,7 @@ const sendEmail= async (req, res = express.response) => {
 module.exports = {
     Login,
     ReTokenizar,
-    crearUsuario, 
+    crearUsuario,
     changePassword,
     sendEmail
 }
