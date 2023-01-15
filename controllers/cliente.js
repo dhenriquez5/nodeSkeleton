@@ -29,14 +29,12 @@ const getCliente = async (req, res = express.response) => {
 
 const CreateCliente = async (req, res = express.response) => {
 
-    console.log(req.body);
     const { body } = req;
     try {
         const cliente = new Cliente(req.body);
         cliente.user = req.uid;
 
         const existeCliente = await Cliente.findOne({ cedula: body.cedula });
-        console.log(existeCliente);
         if (existeCliente) {
             return res.status(400).json({
                 ok: false,
@@ -61,12 +59,11 @@ const CreateCliente = async (req, res = express.response) => {
 
 const UpdateCliente = async (req, res = express.response) => {
 
-    console.log(req.body);
     try {
         const id = req.params.id;
         const uid = req.uid;
 
-        const cliente = await Cliente.findById(eventoId);
+        const cliente = await Cliente.findById(id);
 
         if (cliente.user.toString() !== uid) {
             return res.status(401).json({
@@ -99,7 +96,6 @@ const UpdateCliente = async (req, res = express.response) => {
 
 
 const DeleteCliente = async (req, res = express.response) => {
-    console.log(req.body);
     try {
         const id = req.params.id;
         const uid = req.uid;
@@ -109,7 +105,7 @@ const DeleteCliente = async (req, res = express.response) => {
         if (cliente.user.toString() !== uid) {
             return res.status(401).json({
                 ok: false,
-                msg: 'no puede eliminar este evento'
+                msg: 'no puede eliminar este cliente'
             })
         }
         await Cliente.findByIdAndDelete(id);

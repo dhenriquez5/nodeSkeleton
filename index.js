@@ -28,6 +28,7 @@ app.use(express.json())
 app.use('/api/auth',require('./routes/auth'));
 app.use('/api/events',require('./routes/events'));
 app.use('/api/clientes',require('./routes/cliente'));
+app.use('/api/prestamos',require('./routes/prestamo'));
 
 //escuchar Peticiones
 app.listen(process.env.PORT,() => {
