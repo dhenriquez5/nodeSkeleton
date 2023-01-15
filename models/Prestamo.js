@@ -10,7 +10,7 @@ const PrestamoSchema = Schema({
     periodo_pago:{type:String,required:true},
     observacion:{type:String},
     user:{ type: Schema.Types.ObjectId, ref:'Usuario',required:true},
-    pagos: [{ valor_pago: Number, fecha_pago: Date, nuevo_capital:Number }],
+    pagos: [{ valor_pago: Number, fecha_pago: Date, valor_capital:Number,valor_interes: Number}],
 })
 
 module.exports = model('Prestamo',PrestamoSchema);
