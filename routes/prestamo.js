@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const { getPrestamo, CreatePrestamo, UpdatePrestamo, DeletePrestamo } = require('../controllers/prestamo');
+const { getPrestamo, CreatePrestamo, UpdatePrestamo, DeletePrestamo, getPrestamoByCliente } = require('../controllers/prestamo');
 const { isDate } = require('../helpers/isDate');
 const { ExistePrestamo } = require('../helpers/validaciones-db');
 const { validarCampos } = require('../middlewares/validar-campos')
@@ -13,6 +13,8 @@ router.use(validarJWT)
 
 
 router.get('/getPrestamo/:termino',getPrestamo)
+
+router.get('/getPrestamoByCliente/:termino',getPrestamoByCliente)
 
 router.post('/CreatePrestamo',
 [

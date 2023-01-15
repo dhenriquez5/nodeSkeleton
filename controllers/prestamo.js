@@ -1,4 +1,5 @@
 const express = require('express');
+var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
 
 
@@ -23,15 +24,33 @@ const getPrestamo = async (req, res = express.response) => {
     }
 };
 
+const getPrestamoByCliente =async (req=express.request, res=express.response) => {
+    try {
+        const { termino } = req.params;
+        const prestamos = await Prestamo.find({
+            id_cliente:termino,
+            $and: [{ user: req.uid }]
+        }).populate('user').populate('cliente');
+        return res.status(200).json({
+            ok: true,
+            response: prestamos
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al traer prestamo'
+        })
+    }
+};
+
 const CreatePrestamo = async (req = express.request, res = express.response) => {
     try {
         const { body, uid } = req;
-        console.log(body);
         const newPrestamo = new Prestamo(body);
         newPrestamo.user = uid;
 
         // const existePrestamo = await Prestamo.findOne({ id_cliente: body.id_cliente });
-        // console.log(existePrestamo);
         // if (existePrestamo) {
         //     return res.status(400).json({
         //         ok: false,
@@ -119,5 +138,6 @@ module.exports = {
     getPrestamo,
     CreatePrestamo,
     UpdatePrestamo,
-    DeletePrestamo
+    DeletePrestamo,
+    getPrestamoByCliente
 }
