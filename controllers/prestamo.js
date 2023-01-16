@@ -1,7 +1,8 @@
 const express = require('express');
 var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
-
+var moment = require('moment');
+const { addNuevoCapital_Interes } = require('../helpers/Operations');
 
 const getPrestamo = async (req, res = express.response) => {
     try {
@@ -24,13 +25,16 @@ const getPrestamo = async (req, res = express.response) => {
     }
 };
 
-const getPrestamoByCliente =async (req=express.request, res=express.response) => {
+const getPrestamoByCliente = async (req = express.request, res = express.response) => {
     try {
         const { termino } = req.params;
-        const prestamos = await Prestamo.find({
-            id_cliente:termino,
+        let prestamos = await Prestamo.find({
+            id_cliente: termino,
             $and: [{ user: req.uid }]
         }).populate('user').populate('cliente');
+
+        prestamos = prestamos.map(addNuevoCapital_Interes);
+
         return res.status(200).json({
             ok: true,
             response: prestamos
@@ -85,16 +89,16 @@ const UpdatePrestamo = async (req = express.request, res = express.response) => 
             })
         }
 
-        const nuevoPrestamo= {
+        const nuevoPrestamo = {
             ...req.body,
-            user:uid
+            user: uid
         };
 
-        const prestamoActualizado = await Prestamo.findByIdAndUpdate(id,nuevoPrestamo,{new:true});
+        const prestamoActualizado = await Prestamo.findByIdAndUpdate(id, nuevoPrestamo, { new: true });
         return res.status(200).json({
-            ok:true,
-            id:id,
-            response:prestamoActualizado
+            ok: true,
+            id: id,
+            response: prestamoActualizado
         });
 
     } catch (error) {
@@ -121,7 +125,7 @@ const DeletePrestamo = async (req = express.request, res = express.response) => 
 
         await Prestamo.findByIdAndDelete(id);
         return res.status(200).json({
-            ok:true
+            ok: true
         });
 
     } catch (error) {
@@ -133,11 +137,48 @@ const DeletePrestamo = async (req = express.request, res = express.response) => 
     }
 };
 
+const getInteresById = async (req = express.request, res = express.response) => {
+    try {
+        const { id } = req.params;
+        const prestamo = await Prestamo.findById(id);
+        let sum_pagos = 0;
+        prestamo.pagos.map((p) => {
+            sum_pagos += p.valor_capital;
+        });
+
+        const capital_actual = prestamo.valor_prestamo - sum_pagos;
+
+        console.log(capital_actual);
+
+        var date1 = moment("2022-01-01");
+        var date2 = moment();
+        var daysDiff = date2.diff(date1, 'days');
+        console.log(daysDiff);
+
+        const valor_interes = (capital_actual / 30) * daysDiff;
+        console.log(valor_interes);
+
+        return res.status(200).json({
+            ok: true,
+            valor_interes,
+            capital_actual
+        });
+
+
+} catch (error) {
+    console.error(error);
+    res.status(500).json({
+        ok: false,
+        msg: 'Error al traer el interes del prestamo'
+    })
+}
+};
 
 module.exports = {
     getPrestamo,
     CreatePrestamo,
     UpdatePrestamo,
     DeletePrestamo,
-    getPrestamoByCliente
+    getPrestamoByCliente,
+    getInteresById
 }
