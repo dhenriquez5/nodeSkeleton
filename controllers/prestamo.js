@@ -33,7 +33,7 @@ const getPrestamoByCliente = async (req = express.request, res = express.respons
             $and: [{ user: req.uid }]
         }).populate('user').populate('cliente');
 
-        prestamos = prestamos.map(addNuevoCapital_Interes);
+        prestamos = prestamos.map(addNuevoCapital_Interes)
 
         return res.status(200).json({
             ok: true,

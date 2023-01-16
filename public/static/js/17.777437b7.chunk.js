@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkgocredix=self.webpackChunkgocredix||[]).push([[17],{3017:function(e,n,r){r.r(n),r.d(n,{HomePage:function(){return c}});r(2791);var u=r(184),c=function(){return(0,u.jsx)("div",{children:"Home Image"})};n.default=c}}]);
+//# sourceMappingURL=17.777437b7.chunk.js.map
