@@ -17,19 +17,23 @@
         },
         {
             "src": "/",
-            "dest": "public/index.html"
+            "dest": "public/$1"
+        },
+        {
+            "src": "/(.+)",
+            "dest": "public/$1"
         },
         {
             "src": "/login",
-            "dest": "public/index.html"
+            "dest": "public/$1"
         },
         {
             "src": "/register",
-            "dest": "public/index.html"
+            "dest": "public/$1"
         },
         {
             "src": "/home",
-            "dest": "public/index.html"
+            "dest": "public/$1"
         }
     ]
 }
