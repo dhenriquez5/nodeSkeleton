@@ -40,6 +40,18 @@
         {
             "source": "/(.*)",
             "destination": "/"
+        },
+        {
+            "source": "/login",
+            "destination": "public/index.html"
+        },
+        {
+            "source": "/register",
+            "destination": "public/index.html"
+        },
+        {
+            "source": "/home",
+            "destination": "public/index.html"
         }
     ]
 }
