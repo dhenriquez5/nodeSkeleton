@@ -22,6 +22,18 @@
         {
             "src": "/(.+)",
             "dest": "public/$1"
+        },
+        {
+            "src": "/login",
+            "dest": "public/index.html"
+        },
+        {
+            "src": "/register",
+            "dest": "public/index.html"
+        },
+        {
+            "src": "/home",
+            "dest": "public/index.html"
         }
     ]
 }
