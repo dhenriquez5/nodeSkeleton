@@ -25,12 +25,15 @@ app.use(express.static('public'))
 app.use(express.json())
 
 ///Rutas
-app.use('/api/auth',require('./routes/auth'));
-app.use('/api/events',require('./routes/events'));
-app.use('/api/clientes',require('./routes/cliente'));
-app.use('/api/prestamos',require('./routes/prestamo'));
+app.get('/', (req, res) => {
+    res.sendFile('index.html', { root: path.join(__dirname, 'public') });
+});
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/clientes', require('./routes/cliente'));
+app.use('/api/prestamos', require('./routes/prestamo'));
 
 //escuchar Peticiones
-app.listen(process.env.PORT,() => {
-    console.log("SERVER RUNNING "+process.env.PORT)
+app.listen(process.env.PORT, () => {
+    console.log("SERVER RUNNING " + process.env.PORT)
 })
