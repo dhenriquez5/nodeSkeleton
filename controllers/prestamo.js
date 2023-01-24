@@ -2,7 +2,7 @@ const express = require('express');
 var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
 var moment = require('moment');
-const { addNuevoCapital_Interes } = require('../helpers/Operations');
+const { addNuevoCapital_Interes, CalcularInteres } = require('../helpers/Operations');
 
 const getPrestamo = async (req, res = express.response) => {
     try {
@@ -137,42 +137,62 @@ const DeletePrestamo = async (req = express.request, res = express.response) => 
     }
 };
 
-const getInteresById = async (req = express.request, res = express.response) => {
+
+const generatePago = async (req = express.request, res = express.response) => {
     try {
-        const { id } = req.params;
-        const prestamo = await Prestamo.findById(id);
-        let sum_pagos = 0;
-        prestamo.pagos.map((p) => {
-            sum_pagos += p.valor_capital;
-        });
+        const { body, uid } = req;
+        console.log(body);
+        let prestamo = await Prestamo.findById(body.prestamo_id);
 
-        const capital_actual = prestamo.valor_prestamo - sum_pagos;
+        const nuevoPago = {
+            valor_pago: body.valor_pagar,
+            fecha_pago: moment(body.fecha_pago),
+            valor_capital: (body.valor_pagar-body.valor_interes),
+            valor_interes: body.valor_interes,
+        };
+        console.log(nuevoPago);
+        prestamo.pagos.push(nuevoPago);
 
-        console.log(capital_actual);
-
-        var date1 = moment("2022-01-01");
-        var date2 = moment();
-        var daysDiff = date2.diff(date1, 'days');
-        console.log(daysDiff);
-
-        const valor_interes = (capital_actual / 30) * daysDiff;
-        console.log(valor_interes);
-
+        const prestamoActualizado = await Prestamo.findByIdAndUpdate(body.prestamo_id, prestamo, { new: true });
         return res.status(200).json({
             ok: true,
-            valor_interes,
-            capital_actual
+            id: body.prestamo_id,
+            response: prestamoActualizado
         });
 
-
-} catch (error) {
-    console.error(error);
-    res.status(500).json({
-        ok: false,
-        msg: 'Error al traer el interes del prestamo'
-    })
-}
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error al generar pago'
+        })
+    }
 };
+
+const reCalcularInteres =  async (req = express.request, res = express.response) => {
+    try {
+        const { body, uid } = req;
+        let prestamo = await Prestamo.findOne({
+            _id: body.prestamo_id,
+            $and: [{ user: uid }]
+        }).populate('user').populate('cliente');
+
+        const valor_interes = CalcularInteres(prestamo,body.fecha_corte);
+
+        return res.status(200).json({
+            ok:true,
+            response:valor_interes
+        })
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error al recalcular interes'
+        })
+    }
+
+}
 
 module.exports = {
     getPrestamo,
@@ -180,5 +200,6 @@ module.exports = {
     UpdatePrestamo,
     DeletePrestamo,
     getPrestamoByCliente,
-    getInteresById
+    reCalcularInteres,
+    generatePago
 }
