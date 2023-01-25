@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
-const { getPrestamo, CreatePrestamo, UpdatePrestamo, DeletePrestamo, getPrestamoByCliente, getInteresById, generatePago, reCalcularInteres } = require('../controllers/prestamo');
+const { getPrestamo, CreatePrestamo, UpdatePrestamo, DeletePrestamo, getPrestamoByCliente, getInteresById, generatePago, reCalcularInteres, deletePago } = require('../controllers/prestamo');
 const { isDate } = require('../helpers/isDate');
 const { ExistePrestamo } = require('../helpers/validaciones-db');
 const { validarCampos } = require('../middlewares/validar-campos')
@@ -55,9 +55,17 @@ router.post('/generatePago',
 router.post('/reCalcularInteres',
     [
         check('prestamo_id', 'el cliente es obligatorio').not().isEmpty(),
-        check('fecha_corte', 'El valor de prestamo es obligatorio').not().isEmpty(),
+        check('fecha_corte', 'La fecha de corte es  obligatorio').not().isEmpty(),
     ],
     reCalcularInteres
+)
+
+router.post('/deletePago',
+    [
+        check('pago_id', 'el pago es obligatorio').not().isEmpty(),
+        check('prestamo_id', 'El prestamo es obligatorio').not().isEmpty(),
+    ],
+    deletePago
 )
 
 module.exports = router;

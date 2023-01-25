@@ -30,7 +30,7 @@ const getPrestamoByCliente = async (req = express.request, res = express.respons
         const { termino } = req.params;
         let prestamos = await Prestamo.find({
             id_cliente: termino,
-            $and: [{ user: req.uid }]
+            $and: [{ user: req.uid },{pagado:false}]
         }).populate('user').populate('cliente');
 
         prestamos = prestamos.map(addNuevoCapital_Interes)
@@ -147,7 +147,7 @@ const generatePago = async (req = express.request, res = express.response) => {
         const nuevoPago = {
             valor_pago: body.valor_pagar,
             fecha_pago: moment(body.fecha_pago),
-            valor_capital: (body.valor_pagar-body.valor_interes),
+            valor_capital: (body.valor_pagar - body.valor_interes),
             valor_interes: body.valor_interes,
         };
         console.log(nuevoPago);
@@ -169,7 +169,7 @@ const generatePago = async (req = express.request, res = express.response) => {
     }
 };
 
-const reCalcularInteres =  async (req = express.request, res = express.response) => {
+const reCalcularInteres = async (req = express.request, res = express.response) => {
     try {
         const { body, uid } = req;
         let prestamo = await Prestamo.findOne({
@@ -177,13 +177,13 @@ const reCalcularInteres =  async (req = express.request, res = express.response)
             $and: [{ user: uid }]
         }).populate('user').populate('cliente');
 
-        const valor_interes = CalcularInteres(prestamo,body.fecha_corte);
+        const valor_interes = CalcularInteres(prestamo, body.fecha_corte);
 
         return res.status(200).json({
-            ok:true,
-            response:valor_interes
+            ok: true,
+            response: valor_interes
         })
-        
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({
@@ -191,7 +191,27 @@ const reCalcularInteres =  async (req = express.request, res = express.response)
             msg: 'Error al recalcular interes'
         })
     }
+}
 
+const deletePago = async (req = express.request, res = express.response) => {
+    try {
+        const { body, uid } = req;
+
+        let prestamo_updated =await Prestamo.findByIdAndUpdate({ _id: body.prestamo_id }, { $pull: { pagos: { _id: body.pago_id } } }, { new: true });
+        prestamo_updated = addNuevoCapital_Interes(prestamo_updated);
+
+        return res.status(200).json({
+            ok: true,
+            response: prestamo_updated
+        })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error al eliminar pago'
+        })
+    }
 }
 
 module.exports = {
@@ -201,5 +221,6 @@ module.exports = {
     DeletePrestamo,
     getPrestamoByCliente,
     reCalcularInteres,
-    generatePago
+    generatePago,
+    deletePago
 }
