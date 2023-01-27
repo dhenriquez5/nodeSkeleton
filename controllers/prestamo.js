@@ -2,7 +2,6 @@ const express = require('express');
 var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
 var moment = require('moment');
-//const { addNuevoCapital_Interes, CalcularInteres } = require('../helpers/Operations');
 const {  CalcularInteres } = require('../helpers/Operations');
 
 
