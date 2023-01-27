@@ -2,7 +2,9 @@ const express = require('express');
 var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
 var moment = require('moment');
-const { addNuevoCapital_Interes, CalcularInteres } = require('../helpers/Operations');
+//const { addNuevoCapital_Interes, CalcularInteres } = require('../helpers/Operations');
+const {  CalcularInteres } = require('../helpers/Operations');
+
 
 const getPrestamo = async (req, res = express.response) => {
     try {
@@ -33,7 +35,11 @@ const getPrestamoByCliente = async (req = express.request, res = express.respons
             $and: [{ user: req.uid },{pagado:false}]
         }).populate('user').populate('cliente');
 
-        prestamos = prestamos.map(addNuevoCapital_Interes)
+        prestamos = prestamos.map( (p) => {
+            return CalcularInteres(p,moment())
+        });
+
+
 
         return res.status(200).json({
             ok: true,
@@ -177,11 +183,12 @@ const reCalcularInteres = async (req = express.request, res = express.response) 
             $and: [{ user: uid }]
         }).populate('user').populate('cliente');
 
-        const valor_interes = CalcularInteres(prestamo, body.fecha_corte);
+        const prestamo2 = CalcularInteres(prestamo, body.fecha_corte);
+        
 
         return res.status(200).json({
             ok: true,
-            response: valor_interes
+            response: prestamo2.valor_interes
         })
 
     } catch (error) {
@@ -198,7 +205,7 @@ const deletePago = async (req = express.request, res = express.response) => {
         const { body, uid } = req;
 
         let prestamo_updated =await Prestamo.findByIdAndUpdate({ _id: body.prestamo_id }, { $pull: { pagos: { _id: body.pago_id } } }, { new: true });
-        prestamo_updated = addNuevoCapital_Interes(prestamo_updated);
+        prestamo_updated = CalcularInteres(prestamo_updated,moment());
 
         return res.status(200).json({
             ok: true,
