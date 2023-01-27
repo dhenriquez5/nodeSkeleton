@@ -5,6 +5,27 @@ var moment = require('moment');
 const {  CalcularInteres } = require('../helpers/Operations');
 
 
+const getPrestamoActivo = async (req, res = express.response) => {
+    try {
+        let prestamos = await Prestamo.find({
+            $and: [{ user: req.uid }, { pagado: false }]
+        }).populate('user').populate('cliente');
+
+        prestamos = prestamos.map(addNuevoCapital_Interes)
+
+        return res.status(200).json({
+            ok: true,
+            response: prestamos
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error al traer prestamo'
+        })
+    }
+}
+
 const getPrestamo = async (req, res = express.response) => {
     try {
         const { termino } = req.params;
@@ -31,7 +52,7 @@ const getPrestamoByCliente = async (req = express.request, res = express.respons
         const { termino } = req.params;
         let prestamos = await Prestamo.find({
             id_cliente: termino,
-            $and: [{ user: req.uid },{pagado:false}]
+            $and: [{ user: req.uid }, { pagado: false }]
         }).populate('user').populate('cliente');
 
         prestamos = prestamos.map( (p) => {
@@ -149,6 +170,10 @@ const generatePago = async (req = express.request, res = express.response) => {
         console.log(body);
         let prestamo = await Prestamo.findById(body.prestamo_id);
 
+        if (body.checkFin) {
+            prestamo.pagado = true;
+        }
+
         const nuevoPago = {
             valor_pago: body.valor_pagar,
             fecha_pago: moment(body.fecha_pago),
@@ -228,5 +253,6 @@ module.exports = {
     getPrestamoByCliente,
     reCalcularInteres,
     generatePago,
-    deletePago
+    deletePago,
+    getPrestamoActivo
 }
