@@ -11,7 +11,9 @@ const getPrestamoActivo = async (req, res = express.response) => {
             $and: [{ user: req.uid }, { pagado: false }]
         }).populate('user').populate('cliente');
 
-        prestamos = prestamos.map(addNuevoCapital_Interes)
+        prestamos = prestamos.map( (p) => {
+            return CalcularInteres(p,moment())
+        });
 
         return res.status(200).json({
             ok: true,
