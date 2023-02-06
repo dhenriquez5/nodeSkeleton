@@ -169,7 +169,6 @@ const DeletePrestamo = async (req = express.request, res = express.response) => 
 const generatePago = async (req = express.request, res = express.response) => {
     try {
         const { body, uid } = req;
-        console.log(body);
         let prestamo = await Prestamo.findById(body.prestamo_id);
 
         if (body.checkFin) {
@@ -182,7 +181,6 @@ const generatePago = async (req = express.request, res = express.response) => {
             valor_capital: (body.valor_pagar - body.valor_interes),
             valor_interes: body.valor_interes,
         };
-        console.log(nuevoPago);
         prestamo.pagos.push(nuevoPago);
 
         const prestamoActualizado = await Prestamo.findByIdAndUpdate(body.prestamo_id, prestamo, { new: true });

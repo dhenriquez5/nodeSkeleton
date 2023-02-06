@@ -2,7 +2,6 @@ var moment = require('moment');
 const CalcularInteres = (prestamo,fecha_corte)=>{
     let sum_pagos = 0;
     let fecha_ultimo_pago = prestamo.fecha_prestamo;
-    console.log(prestamo.pagos);
     prestamo.pagos.map((p) => {
         sum_pagos += p.valor_capital;
     });
