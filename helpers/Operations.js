@@ -1,5 +1,5 @@
 var moment = require('moment');
-const CalcularInteres = (prestamo,fecha_corte)=>{
+const CalcularInteres = (prestamo, fecha_corte) => {
     let sum_pagos = 0;
     let fecha_ultimo_pago = prestamo.fecha_prestamo;
     prestamo.pagos.map((p) => {
@@ -21,12 +21,44 @@ const CalcularInteres = (prestamo,fecha_corte)=>{
     var daysDiff = date2.diff(date1, 'days');
 
     const valor_interes = capital_actual * (prestamo.tasa_interes / 100) / 30 * daysDiff;
-    
+
     prestamo.capital_actual = parseInt(capital_actual);
     prestamo.valor_interes = parseInt(valor_interes);
     return prestamo;
 }
 
+const getCobros = (prestamo,fecha_ini,fecha_fin) => {
+    let fecha_ultimo_pago = prestamo.fecha_prestamo;
+    if (prestamo.pagos.length > 0) {
+        let maxDateObject = prestamo.pagos.reduce((prev, curr) => {
+            let prevDate = new Date(prev.date);
+            let currDate = new Date(curr.date);
+            return (prevDate > currDate) ? prev : curr;
+        });
+        fecha_ultimo_pago = maxDateObject.fecha_pago;
+    }
+    const date1 = moment(fecha_ultimo_pago);
+    const datePlusMonth = date1.add(1, 'months');
+    const isValid = datePlusMonth.isBetween(moment(fecha_ini), moment(fecha_fin), undefined, '[]');
+    return isValid===true;
+}
+
+const getFechaMayorPagos = (prestamo) => {
+    let fecha_ultimo_pago = prestamo.fecha_prestamo;
+    if (prestamo.pagos.length > 0) {
+        let maxDateObject = prestamo.pagos.reduce((prev, curr) => {
+            let prevDate = new Date(prev.date);
+            let currDate = new Date(curr.date);
+            return (prevDate > currDate) ? prev : curr;
+        });
+        fecha_ultimo_pago = maxDateObject.fecha_pago;
+    }
+    return fecha_ultimo_pago;
+};
+
+
 module.exports = {
-    CalcularInteres
+    CalcularInteres,
+    getCobros,
+    getFechaMayorPagos
 }
