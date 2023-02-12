@@ -27,7 +27,7 @@ const CalcularInteres = (prestamo, fecha_corte) => {
     return prestamo;
 }
 
-const getCobros = (prestamo,fecha_ini,fecha_fin) => {
+const getCobros = (prestamo, fecha_ini, fecha_fin) => {
     let fecha_ultimo_pago = prestamo.fecha_prestamo;
     if (prestamo.pagos.length > 0) {
         let maxDateObject = prestamo.pagos.reduce((prev, curr) => {
@@ -40,7 +40,7 @@ const getCobros = (prestamo,fecha_ini,fecha_fin) => {
     const date1 = moment(fecha_ultimo_pago);
     const datePlusMonth = date1.add(1, 'months');
     const isValid = datePlusMonth.isBetween(moment(fecha_ini), moment(fecha_fin), undefined, '[]');
-    return isValid===true;
+    return isValid === true;
 }
 
 const getFechaMayorPagos = (prestamo) => {
@@ -56,9 +56,31 @@ const getFechaMayorPagos = (prestamo) => {
     return fecha_ultimo_pago;
 };
 
+const ConvertPrestamoToPagos = (prestamo, fecha_ini, fecha_fin) => {
+    const pagos = [];
+    let pagosFiltered = prestamo.pagos.filter(p => moment(p.fecha_pago).isBetween(moment(fecha_ini), moment(fecha_fin), undefined, '[]'));
+
+    pagosFiltered.forEach(pago => {
+        pagos.push({
+            _id:pago._id,
+            cliente: prestamo.cliente,
+            fecha_prestamo: prestamo.fecha_prestamo,
+            valor_prestamo: prestamo.valor_prestamo,
+            capital_actual: prestamo.capital_actual,
+            fecha_pago:pago.fecha_pago,
+            valor_pago:pago.valor_pago,
+            valor_capital:pago.valor_capital,
+            valor_interes:pago.valor_interes
+        })
+    });
+
+    return pagos
+}
+
 
 module.exports = {
     CalcularInteres,
     getCobros,
-    getFechaMayorPagos
+    getFechaMayorPagos,
+    ConvertPrestamoToPagos
 }
