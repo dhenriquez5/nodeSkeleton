@@ -2,7 +2,7 @@ const express = require('express');
 var mongoose = require('mongoose');
 const Prestamo = require('../models/Prestamo');
 var moment = require('moment');
-const {  CalcularInteres, getCobros, getFechaMayorPagos } = require('../helpers/Operations');
+const {  CalcularInteres, getCobros, getFechaMayorPagos, ConvertPrestamoToPagos } = require('../helpers/Operations');
 
 
 const getPrestamoActivo = async (req, res = express.response) => {
@@ -280,6 +280,37 @@ const getProximosCobrar = async (req = express.request, res = express.response) 
     }
 };
 
+const  GetAllPagos =  async (req = express.request, res = express.response) => {
+    try {
+        const { body, uid } = req;
+        const {fecha_ini,fecha_fin} = body;
+        let prestamos = await Prestamo.find({
+            'pagos':{$elemMatch:{'fecha_pago':{ $gte: fecha_ini, $lte: fecha_fin }}},
+            $and: [{ user: req.uid }, { pagado: false }]
+        }).populate('user').populate('id_cliente');//.sort({ fecha_prestamo:'asc'  })
+
+        prestamos = prestamos.map( (p) => {
+            return CalcularInteres(p,moment())
+        });
+
+        const pagos =prestamos.map( (p) => {
+            return ConvertPrestamoToPagos(p,fecha_ini,fecha_fin);
+        })
+
+        return res.status(200).json({
+            ok: true,
+            response: pagos.flat()
+        })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: 'Error al obtener proximos pagos'
+        })
+    }
+}
+
 module.exports = {
     getPrestamo,
     CreatePrestamo,
@@ -290,5 +321,6 @@ module.exports = {
     generatePago,
     deletePago,
     getPrestamoActivo,
-    getProximosCobrar
+    getProximosCobrar,
+    GetAllPagos
 }
