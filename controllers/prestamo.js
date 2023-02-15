@@ -286,7 +286,7 @@ const  GetAllPagos =  async (req = express.request, res = express.response) => {
         const {fecha_ini,fecha_fin} = body;
         let prestamos = await Prestamo.find({
             'pagos':{$elemMatch:{'fecha_pago':{ $gte: fecha_ini, $lte: fecha_fin }}},
-            $and: [{ user: req.uid }, { pagado: false }]
+            $and: [{ user: req.uid }]
         }).populate('user').populate('id_cliente');//.sort({ fecha_prestamo:'asc'  })
 
         prestamos = prestamos.map( (p) => {
