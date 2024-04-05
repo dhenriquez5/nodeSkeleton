@@ -34,7 +34,12 @@ const CreateCliente = async (req, res = express.response) => {
         const cliente = new Cliente(req.body);
         cliente.user = req.uid;
 
-        const existeCliente = await Cliente.findOne({ cedula: body.cedula });
+        const existeCliente = await Cliente.findOne({
+            $and: [
+              { cedula: body.cedula },
+              { user: req.uid }
+            ]
+          });
         if (existeCliente) {
             return res.status(400).json({
                 ok: false,
