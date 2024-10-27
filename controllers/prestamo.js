@@ -362,8 +362,8 @@ const GetBalance = async (req = express.request, res = express.response) => {
         const loans = await Prestamo.find({
             user: uid,
             $or: [
-                { fecha_prestamo: { $gte: fechaIniISO, $lte: fechaFinISO } },  
-                { "pagos.fecha_pago": { $gte: fechaIniISO, $lte: fechaFinISO } }  
+                { fecha_prestamo: { $gte: fechaIniISO, $lte: fechaFinISO } },
+                { "pagos.fecha_pago": { $gte: fechaIniISO, $lte: fechaFinISO } }
             ]
         });
 
@@ -404,6 +404,34 @@ const GetBalance = async (req = express.request, res = express.response) => {
     }
 };
 
+const getPrestamosByDate = async (req = express.request, res = express.response) => {
+    try {
+        const { uid, body } = req;
+        const { fecha_ini, fecha_fin } = body;
+
+        const fechaIniISO = moment(fecha_ini).startOf('day').toDate();
+        const fechaFinISO = moment(fecha_fin).endOf('day').toDate();
+
+        const loans = await Prestamo.find({
+            user: uid,
+            $or: [
+                { fecha_prestamo: { $gte: fechaIniISO, $lte: fechaFinISO } },
+            ]
+        }).sort({ fecha_prestamo: 1 });
+
+        return res.status(200).json({
+            ok: true,
+            response: loans,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            ok: false,
+            msg: "Error al obtener Prestamos",
+        });
+    }
+}
+
 module.exports = {
     getPrestamo,
     CreatePrestamo,
@@ -417,4 +445,5 @@ module.exports = {
     getProximosCobrar,
     GetAllPagos,
     GetBalance,
+    getPrestamosByDate
 };
